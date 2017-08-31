@@ -7,4 +7,4 @@ ionic 自定义九宫格解锁组件
 效果图如下
 
  
-[image](git@github.com:miaozhenkun/ionic2-3deblocking.git/deblocking/first.gif)
+[img](git@github.com:miaozhenkun/ionic2-3deblocking.git/deblocking/first.gif)
