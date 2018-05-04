@@ -1,4 +1,4 @@
-import {Component, Input, Output, EventEmitter} from '@angular/core';
+import {Component, Input, Output, EventEmitter, OnChanges, SimpleChanges} from '@angular/core';
 import { IonicPage} from 'ionic-angular';
 /**
  * @name 自定义九宫格解锁组件
@@ -6,13 +6,13 @@ import { IonicPage} from 'ionic-angular';
  * @example   <deb-locking [currheight]="canvas 距离顶部的高度" (pwdResult)="getResult($event)"></deb-locking>
  * deblocking
  */
-@IonicPage()
+// @IonicPage()
 @Component({
   selector: 'deb-locking',
   templateUrl: 'deblocking.html',
 })
-export class Deblocking {
-  R = 26;canvasWidth = 400;canvasHeight = 320;OffsetX = 25; OffsetY = 25;
+export class Deblocking implements OnChanges{
+  R = 26;canvasWidth = 400;canvasHeight = 320;OffsetX = 22; OffsetY = 22;
   canvas:any;
   context:any;
   circleArr = [];
@@ -20,12 +20,13 @@ export class Deblocking {
   currheight:number;//此高度为 canvas距离顶部的高度
   @Input()
   color:string='primary';//主题颜色,此处为拓展项，以后添加
+  @Input()
+  clear:string='';
   @Output() pwdResult = new EventEmitter<any>();
 
   constructor() {
   }
-  ngAfterContentInit() {
-    console.log(this.currheight);
+  ngOnInit() {
     this.canvas = document.getElementById("lockCanvass");
     this.canvasWidth = document.body.offsetWidth;//网页可见区域宽
     this.canvas.width = this.canvasWidth;
@@ -89,14 +90,14 @@ export class Deblocking {
       cxt.beginPath();
       for (var i = 0; i < pwdArr.length; i++) {
         var pointIndex = pwdArr[i];
-
         cxt.lineTo(circleArr[pointIndex].X, circleArr[pointIndex].Y);
       }
       cxt.lineWidth = 10;
-       cxt.strokeStyle = "#627eed";
+       cxt.strokeStyle = "#5b98fb";
      // cxt.strokeStyle = "#00ffdd";
       cxt.stroke();
       cxt.closePath();
+
       if(touchPoint!=null){
         var lastPointIndex=pwdArr[pwdArr.length-1];
         var lastPoint=circleArr[lastPointIndex];
@@ -111,7 +112,7 @@ export class Deblocking {
     }
     for (var i = 0; i < circleArr.length; i++) {
       var Point = circleArr[i];
-      cxt.fillStyle = "#627eed";
+      cxt.fillStyle = "#5b98fb";
       cxt.beginPath();
       cxt.arc(Point.X, Point.Y, this.R, 0, Math.PI * 2, true);
       cxt.closePath();
@@ -122,7 +123,7 @@ export class Deblocking {
       cxt.closePath();
       cxt.fill();
       if(pwdArr.indexOf(i)>=0){
-        cxt.fillStyle = "#627eed";
+        cxt.fillStyle = "#5b98fb";
         cxt.beginPath();
         cxt.arc(Point.X, Point.Y, this.R -16, 0, Math.PI * 2, true);
         cxt.closePath();
@@ -152,11 +153,18 @@ export class Deblocking {
       cxt.clearRect(0,0,_this.canvasWidth,_this.canvasHeight);
       //此处应减去  九宫格解锁的实际高度
       _this.Draw(cxt,_this.circleArr,pwdArr,{X:touches.pageX,Y:touches.pageY-_this.currheight});
+        //阻止事件冒泡   2018-04-03 ionic 碰到 右滑返回上一页面 BUG
+        var oEvent = e || event;
+        oEvent.cancelBubble = true;
+        oEvent.stopPropagation();
     }, false);
     canvas.addEventListener("touchend", function (e) {
+      // var touches = e.touches[0];
       cxt.clearRect(0,0,_this.canvasWidth,_this.canvasHeight);
       _this.Draw(cxt,_this.circleArr,pwdArr,null);
       _this.pwdResult.emit(pwdArr);
+      cxt.clearRect(0,0,_this.canvasWidth,_this.canvasHeight);
+      _this.Draw(cxt,_this.circleArr,[],{X:0,Y:0});
       pwdArr=[];
     }, false);
   }
